@@ -1,16 +1,57 @@
 # Breast Cancer Feature Selection
 
-**Binary GA/GWO feature selection, nested cross-validation, and malignant-recall evaluation** on the Breast Cancer Wisconsin (Diagnostic) dataset.
+[![CI](https://github.com/Ehsan-Rezaeii/breast-cancer-feature-selection/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Ehsan-Rezaeii/breast-cancer-feature-selection/actions/workflows/ci.yml)
 
-This implemented Project 2 study asks whether binary metaheuristics can reduce feature count while preserving classification performance, especially malignant recall. It reuses the actual installed [Project 1 distribution](https://github.com/Ehsan-Rezaeii/metaheuristics-lab) at commit `6b4ef0fa3d72f608146f3dd7eabb84bf39fa896e`; optimizer implementations are not copied here.
+**A reproducible comparison of binary metaheuristic feature selection and simple machine-learning baselines, with particular attention to detecting malignant cases.** This study uses the [Breast Cancer Wisconsin (Diagnostic) dataset](https://archive.ics.uci.edu/dataset/17/breast-cancer), nested cross-validation, and an explicitly frozen final evaluation.
 
-The full 90-call protocol was executed. GWO-S retained 15/30 features and matched AllFeatures' holdout recall of 40/42 (0.9524); GA and GWO-V missed four malignant cases versus two for AllFeatures. This mixed result does **not** establish superiority or clinical equivalence. See [measured results and limitations](docs/RESULTS.md), including the preflight holdout-access caveat.
+**Research question:** Can Binary Genetic Algorithm (GA) and Binary Grey Wolf Optimizer (GWO) reduce the number of predictors while preserving malignant-class recall?
 
-**Educational methodological study only. Not for clinical diagnosis or patient care.**
+**Main finding:** Binary GWO-S selected **15 of 30 features** and detected **40 of 42 malignant cases** in the held-out set—the same recall and confusion matrix as the all-features baseline. Other binary searches did not consistently preserve recall. This is **one small experimental comparison, not evidence of clinical equivalence or general superiority**.
 
-## Install
+> **Research and educational use only.** This repository is not a diagnostic tool, medical device, or recommendation for patient care.
 
-Python 3.11 or 3.12 and Git are required. The source dependency needs GitHub access; no PyPI release of Project 1 is assumed.
+## Results at a glance
+
+The study uses **569 samples, 30 numeric predictors**, and a stratified **455-row development / 114-row holdout** split. The holdout contains **42 malignant** and **72 benign** cases. Malignant is defined as the positive class (`1`), so a **false negative (FN)** is a malignant case predicted as benign.
+
+The following are **measured results from the frozen final holdout**, not cross-validation averages:
+
+| Method | Selected features | Malignant recall | F1 | ROC-AUC | False negatives |
+|---|---:|---:|---:|---:|---:|
+| All features | 30 | **0.9524** | **0.9639** | **0.9987** | **2** |
+| SelectKBest (k=10) | 10 | 0.9524 | 0.9412 | 0.9785 | 2 |
+| Binary GA | 14 | 0.9048 | 0.9383 | 0.9947 | 4 |
+| **Binary GWO-S** | **15** | **0.9524** | **0.9639** | 0.9891 | **2** |
+| Binary GWO-V | 9 | 0.9048 | 0.9383 | 0.9848 | 4 |
+| Binary Random Search | 16 | 0.9286 | 0.9398 | 0.9940 | 3 |
+
+**Interpretation:** GWO-S used half as many features as the all-features baseline while matching its thresholded predictions on this holdout. Its lower ROC-AUC means the models are **not equivalent in ranking performance**, and neither result establishes clinical safety. SelectKBest achieved the same recall with only 10 features but made more false-positive predictions. GA and GWO-V each missed two additional malignant cases.
+
+![Development CV: malignant recall versus selected feature count](results/full/development_recall_features.png)
+
+See [complete measured results](docs/RESULTS.md) for outer-fold means and variability, final confusion matrices, selected masks, search costs, and limitations. The [holdout confusion-matrix figure](results/full/final_confusion_matrices.png) is also available.
+
+## Experimental design
+
+The predefined protocol separates model development from final evaluation:
+
+1. **Data and target:** scikit-learn's bundled Wisconsin Diagnostic dataset; original labels are explicitly remapped so `1 = malignant` and `0 = benign`.
+2. **Evaluation split:** stratified 80/20 development/holdout partition (`random_state=2026`), followed by **3-fold outer CV** on development data (`2027`) and **3-fold inner CV** for each training fold (`2028`).
+3. **Baselines:** all 30 features and `SelectKBest(f_classif, k=10)`.
+4. **Search methods:** Binary GA, Binary GWO with S-shaped and V-shaped transfer rules, and binary Random Search. Each uses **population 12** and exactly **90 objective evaluations** per search. All four optimizers come from the [commit-pinned `metaheuristics-lab` library](https://github.com/Ehsan-Rezaeii/metaheuristics-lab/tree/6b4ef0fa3d72f608146f3dd7eabb84bf39fa896e); no optimizer code is copied.
+5. **Classifier:** fold-local `StandardScaler` and `LogisticRegression(C=1, solver="liblinear", max_iter=2000, random_state=0)`, with a fixed 0.5 decision threshold.
+6. **Fitness:** minimize `0.70 × (1 − mean recall) + 0.30 × (1 − mean F1) + 0.02 × selected/30`. An empty mask receives a fixed penalty and fits no model.
+7. **Finalization:** repeat full-development searches with seeds `0, 1, 2`; select masks using development-only fitness and predefined tie-breaks; freeze masks and settings before the full-study holdout evaluation.
+
+Preprocessing, feature selection, and fitted classifiers remain inside their permitted training folds. **Optimized inner-CV scores, outer-CV development estimates, and final holdout results are reported separately.**
+
+All four search methods were allocated equal objective-call budgets, **not** equal running time. Across the full study, the saved audit reports **2,160 search objective calls and 6,508 classifier fits** (including baseline and final fits). The low overlap between repeated selected masks is documented rather than concealed.
+
+For exact fold assignments, seeds, optimizer configurations, freeze checksums, and timing definitions, see the [experimental protocol](docs/EXPERIMENT_PROTOCOL.md) and [results](docs/RESULTS.md).
+
+## Install and verify
+
+**Requirements:** Python 3.11 or 3.12 and Git. The installed Project 1 dependency is fetched from a specific Git commit; network access is needed for initial installation.
 
 ```bash
 git clone https://github.com/Ehsan-Rezaeii/breast-cancer-feature-selection.git
@@ -18,64 +59,64 @@ cd breast-cancer-feature-selection
 python -m venv .venv
 source .venv/bin/activate
 python -m pip install -e '.[dev]'
-export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1
-# Writable plotting/font caches are useful in restricted environments:
-export MPLCONFIGDIR=/tmp/p2-mpl XDG_CACHE_HOME=/tmp/p2-cache
 ```
 
-Scientific dependency versions are pinned in pyproject.toml. The measured environment, including transitive packages, is recorded in results/full/requirements_environment.txt; this is an environment snapshot, not the preferred installation command. Code is MIT-licensed; the dataset has separate attribution below.
-
-## Fast verification
+Run the fast checks without repeating the full study:
 
 ```bash
 ruff check .
 ruff format --check .
 pytest -q
 python experiments/smoke_test.py
-# Alternative: retain a synthetic pilot's artifacts in a fresh directory
-bcfs-study smoke --output results/smoke-local
-python -m build
 python experiments/audit_results.py results/full
+python -m build
 ```
 
-Smoke uses deterministic synthetic data, 4 calls, population 3 and one seed; it does not measure the WDBC holdout. Tests also verify WDBC invariants and development-only optimizer behavior. CI runs lint, format, tests, a synthetic smoke, artifact audit, build and a clean wheel install/import on Python 3.11 and 3.12. It does not run the full scientific experiment.
+The smoke test uses synthetic data; it is **not** a second measurement on the Wisconsin holdout. The committed GitHub Actions workflow runs checks, artifact auditing, packaging, and a clean wheel import on Python **3.11 and 3.12**. The recorded full-study run and validation evidence are described in [RESULTS.md](docs/RESULTS.md).
 
-## Reproduce the full study
+## Reproduce the study
 
-Use a fresh output directory. These commands run the predefined protocol, not hyperparameter tuning:
+Use a **new output directory** and run from the repository root. For reproducible single-threaded numerical execution, set the following environment variables on Linux/macOS:
 
 ```bash
+export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1
+export MPLCONFIGDIR=/tmp/p2-mpl XDG_CACHE_HOME=/tmp/p2-cache
+
 bcfs-study develop --output results/reproduction
-# Inspect development artifacts, protocol and freeze.json before final access.
+# Review development artifacts and the frozen choices before final evaluation.
 bcfs-study final --output results/reproduction
 bcfs-study report --output results/reproduction
 python experiments/audit_results.py results/reproduction
-# Include the newly derived cost_summary.csv in the checksum manifest:
-bcfs-study report --output results/reproduction
-python experiments/audit_results.py results/reproduction
 ```
 
-The final command refuses a second holdout evaluation in the same directory. Future tuning cannot reuse this scientific test split as an untouched confirmatory sample. Reproduction is computational verification, not a new independent experiment. Runtime, timestamps and plot bytes may differ across machines.
+The staged workflow refuses a second final evaluation in the same directory. Re-running the study verifies computational reproducibility; **it is not a new independent clinical validation**, because the final split has already been observed. Durations and rendered image bytes may differ across systems. The recorded scientific dependency versions are in `pyproject.toml`, with the measured environment snapshot in [`results/full/requirements_environment.txt`](results/full/requirements_environment.txt).
 
-## Methods and safeguards
+## Evidence and repository guide
 
-AllFeatures; SelectKBest(f_classif,k=10); BinaryGA; BinaryGWO-S; BinaryGWO-V; binary RandomSearch. Every model uses fold-local StandardScaler and fixed LogisticRegression(C=1, solver=liblinear, max_iter=2000, random_state=0), threshold 0.5. Malignant is explicitly mapped to 1; scores are taken from the probability column labeled 1.
+| Resource | Contents |
+|---|---|
+| [Study specification](docs/PROJECT_SPEC.md) | Research question, scope, and acceptance criteria |
+| [Experimental protocol](docs/EXPERIMENT_PROTOCOL.md) | Frozen splits, budgets, objective, and safeguards |
+| [Measured results](docs/RESULTS.md) | CV/holdout tables, compute costs, variance, and candid interpretation |
+| [Implementation walkthrough](docs/IMPLEMENTATION_WALKTHROUGH.md) | Code structure and methodological explanations |
+| [`results/full/`](results/full/) | Fold indices, search traces, masks, freeze files, results, figures, and checksums |
+| [`src/breast_cancer_feature_selection/`](src/breast_cancer_feature_selection/) | Installable data, evaluation, selection, and experiment modules |
+| [`tests/test_study.py`](tests/test_study.py) | Data invariants, budget checks, leakage regressions, and freeze guards |
 
-A stratified 80/20 split (2026) leaves 455 development rows. Three outer folds (2027) each rerun selection inside their training data, using three inner folds (2028). Each binary method receives exactly 90 objective calls with population 12. Empty masks cost 2.0 without model fitting. The minimized fitness is `0.70*(1-mean recall) + 0.30*(1-mean F1) + 0.02*k/30`.
+## Limitations and research integrity
 
-Training-only full-development repeats use seeds 0,1,2. Final mask selection uses inner fitness, then feature count, seed and mask. All six masks, configs and provenance are frozen and committed before full-study final evaluation. Optimized inner scores, outer estimates and the single holdout estimate are kept distinct.
+- **Small, historical dataset:** 42 malignant cases in one final test split are too few to establish robust clinical performance, equivalence, or statistical superiority. One additional false negative changes malignant recall by about **2.38 percentage points**.
+- **No external or prospective validation:** feature selection results must not be interpreted as patient-level diagnostic evidence.
+- **Feature-mask instability:** the three development seeds selected different correlated subsets; mask frequency does not imply biological causality.
+- **Fixed scope:** one Logistic Regression configuration, one threshold, short search budgets, and three outer folds limit the conclusions. Search methods are **not assumed to beat simpler baselines**.
+- **Procedural disclosure:** before the registered full study, a preliminary automated one-call pilot exercised the real-data final code path. Its scores were **not inspected or used for decisions**. Thus the subsequent mask and model choices were development-only, but it would be inaccurate to claim that the holdout was never touched by any preflight code. See [the full explanation](docs/RESULTS.md#limitations-and-procedural-caveat).
 
-## Evidence and code map
+No tuning was performed in response to the reported final results. The full-study masks and configurations were frozen before the recorded final evaluation; its results cannot now be treated as a fresh confirmatory test.
 
-- [Experimental contract](docs/PROJECT_SPEC.md), [registered protocol](docs/EXPERIMENT_PROTOCOL.md), [results](docs/RESULTS.md), and [implementation walkthrough](docs/IMPLEMENTATION_WALKTHROUGH.md).
-- `src/breast_cancer_feature_selection/`: verified data, estimator/metrics, Project 1 objective adapter, staged experiment CLI.
-- `tests/test_study.py`: scientific invariants, deterministic/budget integration, inner/outer leakage regression and freeze guards.
-- `experiments/`: entry point, synthetic smoke, saved-artifact audit.
-- [results/full](results/full/): raw outer rows, every search call and mask, seed repeats, split/fold indices, environment/config, freeze, final rows, cost/summary tables, figures, stdout and checksums.
-- `.github/workflows/ci.yml`: fast verification and packaging on two Python versions.
+## Dataset attribution and project context
 
-![Outer development CV recall versus feature count](results/full/development_recall_features.png)
+**Dataset:** Wolberg, Mangasarian, Street, and Street (1993), *Breast Cancer Wisconsin (Diagnostic)*, UCI Machine Learning Repository. [UCI record](https://archive.ics.uci.edu/dataset/17/breast-cancer) · [DOI: 10.24432/C5DW2B](https://doi.org/10.24432/C5DW2B) · [dataset license: CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). The dataset is accessed through `sklearn.datasets.load_breast_cancer`; no separate raw dataset is committed.
 
-## Data attribution
+This is the **feature-selection application** in a five-project research portfolio. Its reusable optimization dependency is [metaheuristics-lab](https://github.com/Ehsan-Rezaeii/metaheuristics-lab); related studies examine [software defect prediction](https://github.com/Ehsan-Rezaeii/software-defect-prediction), [SQL injection detection](https://github.com/Ehsan-Rezaeii/sqli-detection-lab), and [search-based test generation](https://github.com/Ehsan-Rezaeii/search-based-test-generation). Each addresses a different engineering or research question.
 
-Wolberg, Mangasarian, Street, & Street (1993), *Breast Cancer Wisconsin (Diagnostic)*, UCI Machine Learning Repository. [UCI dataset 17](https://archive.ics.uci.edu/dataset/17/breast-cancer), DOI [10.24432/C5DW2B](https://doi.org/10.24432/C5DW2B), dataset license [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/), as identified by the project specification. The scikit-learn bundled copy is used through `load_breast_cancer`; no duplicate raw dataset is committed. Source labels are remapped from malignant=0/benign=1 to malignant=1/benign=0. The loader verifies 569 rows, 30 predictors, 212 malignant and 357 benign cases; zero-valued predictors are permitted.
+**Code license:** [MIT](LICENSE). Dataset rights and attribution are separate from the code license.
