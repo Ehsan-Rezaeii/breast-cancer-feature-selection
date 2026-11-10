@@ -1,0 +1,28 @@
+{
+  "git_revision": "c4f8e0ab6ce6f1aa2fbdce4382e385d3aa3aab57",
+  "packages": {
+    "matplotlib": "3.10.7",
+    "metaheuristics-lab": "0.1.0",
+    "numpy": "2.2.6",
+    "pandas": "2.3.3",
+    "scikit-learn": "1.7.2",
+    "scipy": "1.15.3"
+  },
+  "platform": "Linux-6.18.57-x86_64-with-glibc2.41",
+  "project1": {
+    "url": "https://github.com/Ehsan-Rezaeii/metaheuristics-lab.git",
+    "vcs_info": {
+      "commit_id": "6b4ef0fa3d72f608146f3dd7eabb84bf39fa896e",
+      "requested_revision": "6b4ef0fa3d72f608146f3dd7eabb84bf39fa896e",
+      "vcs": "git"
+    }
+  },
+  "python": "3.12.14",
+  "source_hashes": {
+    "src/breast_cancer_feature_selection/__init__.py": "ece397e9fac2b3ff0b4de33fbaaabad97267a69ea51ca1df0327befd675a077f",
+    "src/breast_cancer_feature_selection/data.py": "c30ae7d553f239863950007299573d175780880398736dba287a063072ca23bd",
+    "src/breast_cancer_feature_selection/evaluation.py": "ea037a9a392b3331f16998009c0879c386ca7d23666b5e81ca4c70099a8ed32d",
+    "src/breast_cancer_feature_selection/experiment.py": "857d46be5b0aaf4f163a07923f85ed4a8bd863e1a8e151b38e314d5f9802cff3",
+    "src/breast_cancer_feature_selection/selection.py": "17ea9db1c28a988dd9051ff534b06647c1e09ce4329822d35d6c1f033d4684a7"
+  }
+}

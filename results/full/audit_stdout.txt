@@ -1,0 +1,8 @@
+PASS: hashes, splits, fold nesting, budgets, fits, metrics, freeze choices and timestamps
+              method  objective_calls  inner_fits  baseline_selection_fits  evaluation_fits  search_seconds
+         AllFeatures                0           0                        0                4        0.000000
+            BinaryGA              540        1620                        0                4        5.331128
+         BinaryGWO-S              540        1620                        0                4        5.408601
+         BinaryGWO-V              540        1620                        0                4        5.429068
+RandomSearch(binary)              540        1620                        0                4        5.441666
+   SelectKBest(k=10)                0           0                        4                4        0.000000

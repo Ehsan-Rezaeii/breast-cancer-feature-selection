@@ -1,0 +1,5 @@
+{
+  "benign": 285,
+  "malignant": 170,
+  "stage": "development"
+}

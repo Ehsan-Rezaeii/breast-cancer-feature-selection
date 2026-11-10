@@ -1,0 +1,18 @@
+{
+  "budget": 90,
+  "empty_penalty": 2.0,
+  "f1_weight": 0.3,
+  "feature_weight": 0.02,
+  "inner_seed": 2028,
+  "outer_seed": 2027,
+  "pilot": false,
+  "population": 12,
+  "recall_weight": 0.7,
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "split_seed": 2026,
+  "threshold": 0.5
+}
