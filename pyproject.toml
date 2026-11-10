@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "breast-cancer-feature-selection"
+version = "0.1.0"
+description = "Reproducible nested-CV binary feature selection study"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+dependencies = [
+  "metaheuristics-lab @ git+https://github.com/Ehsan-Rezaeii/metaheuristics-lab.git@6b4ef0fa3d72f608146f3dd7eabb84bf39fa896e",
+  "numpy==2.2.6", "scipy==1.15.3", "scikit-learn==1.7.2",
+  "pandas==2.3.3", "matplotlib==3.10.7",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8,<9", "ruff>=0.14,<0.15", "build>=1.2,<2"]
+
+[project.scripts]
+bcfs-study = "breast_cancer_feature_selection.experiment:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
