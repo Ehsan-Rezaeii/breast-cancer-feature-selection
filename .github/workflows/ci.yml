@@ -23,6 +23,7 @@ jobs:
       - run: ruff check . && ruff format --check .
       - run: pytest -q
       - run: python experiments/smoke_test.py
+      - run: python experiments/audit_results.py results/full
       - run: python -m build
       - run: |
           python -m venv /tmp/wheel-check

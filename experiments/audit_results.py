@@ -16,6 +16,8 @@ def audit(output: Path):
     read = lambda name: json.loads((output / name).read_text())  # noqa: E731
     for name, expected in read("checksums.json").items():
         assert hashlib.sha256((output / name).read_bytes()).hexdigest() == expected, name
+    for name, expected in read("environment.json")["source_hashes"].items():
+        assert hashlib.sha256(Path(name).read_bytes()).hexdigest() == expected, name
     config, freeze, split = read("config.json"), read("freeze.json"), read("split.json")
     assert digest(freeze) == (output / "freeze.sha256").read_text().strip()
     assert digest(config) == freeze["config_hash"]
@@ -38,6 +40,13 @@ def audit(output: Path):
             fits += 3 if any(point["mask"]) else 0
             assert point["call"] == call and point["cumulative_fits"] == fits
         assert run["search_fits"] == fits
+        assert all(
+            len(point["mask"]) == 30 and set(point["mask"]) <= {0, 1} for point in run["trace"]
+        )
+        assert any(
+            point["mask"] == run["mask"] and point["fitness"] == run["fitness"]
+            for point in run["trace"]
+        )
         np.testing.assert_allclose(
             run["history"], np.minimum.accumulate([point["fitness"] for point in run["trace"]])
         )
@@ -61,9 +70,10 @@ def audit(output: Path):
         assert freeze["methods"][method]["mask"] == best["mask"]
         row = final.loc[final.method == method].iloc[0]
         assert json.loads(row["mask"]) == best["mask"]
-    expected = outer.groupby("method").recall.mean()
     saved = pd.read_csv(output / "development_summary.csv", header=[0, 1], index_col=0)
-    np.testing.assert_allclose(saved[("recall", "mean")].values, expected.values)
+    for name, statistic in saved.columns:
+        expected = outer.groupby("method")[name].agg(statistic)
+        np.testing.assert_allclose(saved[(name, statistic)].values, expected.values)
     assert freeze["timestamp_utc"] < read("holdout_started.json")["timestamp_utc"]
     assert (
         read("holdout_started.json")["timestamp_utc"]

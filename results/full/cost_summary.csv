@@ -1,0 +1,7 @@
+method,objective_calls,inner_fits,baseline_selection_fits,evaluation_fits,search_seconds
+AllFeatures,0,0,0,4,0.0
+BinaryGA,540,1620,0,4,5.331127636000019
+BinaryGWO-S,540,1620,0,4,5.408601201999943
+BinaryGWO-V,540,1620,0,4,5.429067949999933
+RandomSearch(binary),540,1620,0,4,5.441666096000006
+SelectKBest(k=10),0,0,4,4,0.0
