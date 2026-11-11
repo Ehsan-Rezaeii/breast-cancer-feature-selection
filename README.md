@@ -120,3 +120,4 @@ No tuning was performed in response to the reported final results. The full-stud
 This is the **feature-selection and malignant-recall study** in a five-project research portfolio. It installs [metaheuristics-lab](https://github.com/Ehsan-Rezaeii/metaheuristics-lab) as a commit-pinned dependency instead of copying optimizer code. Related applications investigate [software defect prediction on Apache Camel 1.4 to 1.6](https://github.com/Ehsan-Rezaeii/software-defect-prediction), [SQL injection detection](https://github.com/Ehsan-Rezaeii/sqli-detection-lab), and [search-based test generation](https://github.com/Ehsan-Rezaeii/search-based-test-generation). These studies use different datasets, objectives, and metrics; their numerical results are not directly comparable.
 
 **Code license:** [MIT](LICENSE). Dataset rights and attribution are separate from the code license.
+
