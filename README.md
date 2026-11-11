@@ -25,7 +25,7 @@ The following are **measured results from the frozen final holdout**, not cross-
 | Binary GWO-V | 9 | 0.9048 | 0.9383 | 0.9848 | 4 |
 | Binary Random Search | 16 | 0.9286 | 0.9398 | 0.9940 | 3 |
 
-**Interpretation:** GWO-S used half as many features as the all-features baseline while matching its thresholded predictions on this holdout. Its lower ROC-AUC means the models are **not equivalent in ranking performance**, and neither result establishes clinical safety. SelectKBest achieved the same recall with only 10 features but made more false-positive predictions. GA and GWO-V each missed two additional malignant cases.
+**Interpretation:** GWO-S used half as many features as the all-features baseline and produced the **same aggregate holdout confusion-matrix counts** (TN=71, FP=1, FN=2, TP=40). Identical confusion-matrix counts do not prove that the models predicted the same individual samples; GWO-S also had a lower ROC-AUC. These findings do **not** establish predictive equivalence or clinical safety. SelectKBest achieved the same recall with only 10 features but made more false-positive predictions. GA and GWO-V each missed two additional malignant cases.
 
 ![Development CV: malignant recall versus selected feature count](results/full/development_recall_features.png)
 
@@ -51,7 +51,7 @@ For exact fold assignments, seeds, optimizer configurations, freeze checksums, a
 
 ## Install and verify
 
-**Requirements:** Python 3.11 or 3.12 and Git. The installed Project 1 dependency is fetched from a specific Git commit; network access is needed for initial installation.
+**Requirements:** Python 3.11+ and Git (CI verifies Python 3.11 and 3.12). The installed Project 1 dependency is fetched from a specific Git commit; network access is needed for initial installation.
 
 ```bash
 git clone https://github.com/Ehsan-Rezaeii/breast-cancer-feature-selection.git
@@ -117,6 +117,6 @@ No tuning was performed in response to the reported final results. The full-stud
 
 **Dataset:** Wolberg, Mangasarian, Street, and Street (1993), *Breast Cancer Wisconsin (Diagnostic)*, UCI Machine Learning Repository. [UCI record](https://archive.ics.uci.edu/dataset/17/breast-cancer) · [DOI: 10.24432/C5DW2B](https://doi.org/10.24432/C5DW2B) · [dataset license: CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). The dataset is accessed through `sklearn.datasets.load_breast_cancer`; no separate raw dataset is committed.
 
-This is the **feature-selection application** in a five-project research portfolio. Its reusable optimization dependency is [metaheuristics-lab](https://github.com/Ehsan-Rezaeii/metaheuristics-lab); related studies examine [software defect prediction](https://github.com/Ehsan-Rezaeii/software-defect-prediction), [SQL injection detection](https://github.com/Ehsan-Rezaeii/sqli-detection-lab), and [search-based test generation](https://github.com/Ehsan-Rezaeii/search-based-test-generation). Each addresses a different engineering or research question.
+This is the **feature-selection and malignant-recall study** in a five-project research portfolio. It installs [metaheuristics-lab](https://github.com/Ehsan-Rezaeii/metaheuristics-lab) as a commit-pinned dependency instead of copying optimizer code. Related applications investigate [software defect prediction on Apache Camel 1.4 to 1.6](https://github.com/Ehsan-Rezaeii/software-defect-prediction), [SQL injection detection](https://github.com/Ehsan-Rezaeii/sqli-detection-lab), and [search-based test generation](https://github.com/Ehsan-Rezaeii/search-based-test-generation). These studies use different datasets, objectives, and metrics; their numerical results are not directly comparable.
 
 **Code license:** [MIT](LICENSE). Dataset rights and attribution are separate from the code license.
